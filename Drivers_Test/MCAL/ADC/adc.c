@@ -1,0 +1,197 @@
+/*
+ * adc.c
+ *
+ *  Created on: Sep 20, 2022
+ *      Author: mohamed
+ */
+
+#include "adc.h"
+
+void ADC_init()
+{ SET_BIT(ADCSRA,ADEN) ; // enable ADC
+#if VOLTAGE_REF_MODE == INTERNAL_REF // choosing VREF
+	SET_BIT(ADMUX,REFS0) ;
+	SET_BIT(ADMUX,REFS1) ;
+#elif 	VOLTAGE_REF_MODE == AREF
+	CLR_BIT(ADMUX,REFS0) ;
+	CLR_BIT(ADMUX,REFS1) ;
+
+#elif	VOLTAGE_REF_MODE == AVCC
+	SET_BIT(ADMUX,REFS0) ;
+	CLR_BIT(ADMUX,REFS1) ;
+
+#endif
+#if ADC_PRESCALAR == ADCPRESC2 // chooseing prescalar
+	SER_BIT(ADCSRA,ADPS0) ;
+	CLR_BIT(ADCSRA,ADPS1) ;
+	CLR_BIT(ADCSRA,ADPS2) ;
+
+#elif ADC_PRESCALAR == ADC_PRESC4
+	CLR_BIT(ADCSRA,ADPS0) ;
+	SET_BIT(ADCSRA,ADPS1) ;
+	CLR_BIT(ADCSRA,ADPS2) ;
+
+#elif ADC_PRESCALAR == ADC_PRESC8
+	SET_BIT(ADCSRA,ADPS0) ;
+	SET_BIT(ADCSRA,ADPS1) ;
+	CLR_BIT(ADCSRA,ADPS2) ;
+
+#elif ADC_PRESCALAR == ADC_PRESC16
+	CLR_BIT(ADCSRA,ADPS0) ;
+	CLR_BIT(ADCSRA,ADPS1) ;
+	SET_BIT(ADCSRA,ADPS2) ;
+
+#elif ADC_PRESCALAR == ADC_PRESC32
+	SET_BIT(ADCSRA,ADPS0) ;
+	CLR_BIT(ADCSRA,ADPS1) ;
+	SET_BIT(ADCSRA,ADPS2) ;
+
+
+#elif ADC_PRESCALAR == ADC_PRESC64
+	CLR_BIT(ADCSRA,ADPS0) ;
+	SET_BIT(ADCSRA,ADPS1) ;
+	SET_BIT(ADCSRA,ADPS2) ;
+
+#endif
+#if Auto_Trigger == ENABLED // check auto trigger
+
+#if Auto_Trigger_MODE == FREE_RUN
+	CLR_BIT(SFIOR,ADTS0)
+	CLR_BIT(SFIOR,ADTS1)
+	CLR_BIT(SFIOR,ADTS2)
+
+#elif Auto_Trigger_MODE == ANALOG_COMP
+	SET_BIT(SFIOR,ADTS0)
+	CLR_BIT(SFIOR,ADTS1)
+	CLR_BIT(SFIOR,ADTS2)
+
+
+#elif Auto_Trigger_MODE == ADC_EXT_INT0
+	CLR_BIT(SFIOR,ADTS0)
+	SET_BIT(SFIOR,ADTS1)
+	CLR_BIT(SFIOR,ADTS2)
+
+
+
+
+#elif Auto_Trigger_MODE == T0_CTC
+	SET_BIT(SFIOR,ADTS0)
+	SET_BIT(SFIOR,ADTS1)
+	CLR_BIT(SFIOR,ADTS2)
+
+
+
+#elif Auto_Trigger_MODE == T0_OVF
+	CLR_BIT(SFIOR,ADTS0)
+	CLR_BIT(SFIOR,ADTS1)
+	SET_BIT(SFIOR,ADTS2)
+
+
+
+#elif Auto_Trigger_MODE == T1_CTC
+	SET_BIT(SFIOR,ADTS0)
+	CLR_BIT(SFIOR,ADTS1)
+	SET_BIT(SFIOR,ADTS2)
+
+
+
+
+#elif Auto_Trigger_MODE == T1_OVF
+	CLR_BIT(SFIOR,ADTS0)
+	SET_BIT(SFIOR,ADTS1)
+	SET_BIT(SFIOR,ADTS2)
+
+
+#elif Auto_Trigger_MODE == T1_CAPT_EVENT
+	SET_BIT(SFIOR,ADTS0)
+	SET_BIT(SFIOR,ADTS1)
+	SET_BIT(SFIOR,ADTS2)
+
+#endif
+#endif
+}
+
+
+uint16  ADC_read (uint8_t channel)
+{
+	ADC_channel(channel) ; // to choose the channel
+	SET_BIT(ADCSRA,ADSC) ; // start conversion
+ 	 ADC_waitflag() ;
+  SET_BIT(ADCSRA,ADIF) ; // reset flag
+  uint16 result = ADC ;
+
+return result ;
+}
+
+void ADC_channel(uint8_t channel)
+{
+switch (channel)
+{case (ADC0) :
+	CLR_BIT(ADMUX,MUX0) ;
+	CLR_BIT(ADMUX,MUX1) ;
+	CLR_BIT(ADMUX,MUX2) ;
+	CLR_BIT(ADMUX,MUX3) ;
+	CLR_BIT(ADMUX,MUX4) ;
+	break ;
+
+case (ADC1) :
+	SET_BIT(ADMUX,MUX0) ;
+	CLR_BIT(ADMUX,MUX1) ;
+	CLR_BIT(ADMUX,MUX2) ;
+	CLR_BIT(ADMUX,MUX3) ;
+	CLR_BIT(ADMUX,MUX4) ;
+	break ;
+
+case (ADC2) :
+	CLR_BIT(ADMUX,MUX0) ;
+	SET_BIT(ADMUX,MUX1) ;
+	CLR_BIT(ADMUX,MUX2) ;
+	CLR_BIT(ADMUX,MUX3) ;
+	CLR_BIT(ADMUX,MUX4) ;
+	break ;
+
+case (ADC3) :
+	SET_BIT(ADMUX,MUX0) ;
+	SET_BIT(ADMUX,MUX1) ;
+	CLR_BIT(ADMUX,MUX2) ;
+	CLR_BIT(ADMUX,MUX3) ;
+	CLR_BIT(ADMUX,MUX4) ;
+	break ;
+case (ADC4) :
+	CLR_BIT(ADMUX,MUX0) ;
+	CLR_BIT(ADMUX,MUX1) ;
+	SET_BIT(ADMUX,MUX2) ;
+	CLR_BIT(ADMUX,MUX3) ;
+	CLR_BIT(ADMUX,MUX4) ;
+	break ;
+
+case (ADC5) :
+	SET_BIT(ADMUX,MUX0) ;
+	CLR_BIT(ADMUX,MUX1) ;
+	SET_BIT(ADMUX,MUX2) ;
+	CLR_BIT(ADMUX,MUX3) ;
+	CLR_BIT(ADMUX,MUX4) ;
+	break ;
+case (ADC6) :
+	CLR_BIT(ADMUX,MUX0) ;
+	SET_BIT(ADMUX,MUX1) ;
+	SET_BIT(ADMUX,MUX2) ;
+	CLR_BIT(ADMUX,MUX3) ;
+	CLR_BIT(ADMUX,MUX4) ;
+	break ;
+	case ADC7 :
+	SET_BIT(ADMUX,MUX0) ;
+	SET_BIT(ADMUX,MUX1) ;
+	SET_BIT(ADMUX,MUX2) ;
+	CLR_BIT(ADMUX,MUX3) ;
+	CLR_BIT(ADMUX,MUX4) ;
+	break ;
+
+}
+}
+
+void ADC_waitflag()
+{
+ while ((GET_BIT(ADCSRA,ADIF)) ==0) ;
+
+}
